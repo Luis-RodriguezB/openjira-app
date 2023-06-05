@@ -7,14 +7,13 @@ interface Props {
 }
 
 export const UIProvider: FC<Props> = ({ children }) => {
-  const { state, openSideMenu, closeSideMenu } = useUI();
+  const { state, ...restMethods } = useUI();
 
   return (
     <UIContext.Provider
       value={{
         ...state,
-        openSideMenu,
-        closeSideMenu
+        ...restMethods
       }}
     >
       {children}

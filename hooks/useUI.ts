@@ -3,6 +3,7 @@ import { UIState, uiReducer } from '@/context/ui';
 
 const UI_INITIAL_STATE: UIState = {
   sidemenuOpen: false,
+  modalOpen: false,
 };
 
 
@@ -14,18 +15,31 @@ export const useUI = () => {
       type: 'UI - Open Sidebar',
     });
   };
-
+  
   const closeSideMenu = () => {
     dispatch({
       type: 'UI - Close Sidebar',
     });
   };
+  
+  const openModal = () => {
+    dispatch({
+      type: 'UI - Open Modal',
+    });
+  };
+
+  const closeModal = () => {
+    dispatch({
+      type: 'UI - Close Modal',
+    });
+  };
 
   return {
-    ...state,
     state,
 
     openSideMenu,
     closeSideMenu,
+    openModal,
+    closeModal
   };
 };
