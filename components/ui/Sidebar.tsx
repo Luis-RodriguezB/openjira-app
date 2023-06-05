@@ -29,7 +29,11 @@ export const Sidebar = () => {
       onClose={() => console.log('cerrando')}
     >
       <Box sx={{ width: 250 }}>
-        <Box sx={{ padding: '5px 10px' }} display='flex' justifyContent='space-between'>
+        <Box
+          sx={{ padding: '5px 10px' }}
+          display='flex'
+          justifyContent='space-between'
+        >
           <Typography variant='h4'>Menú</Typography>
 
           <IconButton size='large' edge='end' onClick={closeSideMenu}>
