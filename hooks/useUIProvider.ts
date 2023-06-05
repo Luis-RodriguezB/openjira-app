@@ -4,10 +4,10 @@ import { UIState, uiReducer } from '@/context/ui';
 const UI_INITIAL_STATE: UIState = {
   sidemenuOpen: false,
   modalOpen: false,
+  isDragging: false,
 };
 
-
-export const useUI = () => {
+export const useUIProvider = () => {
   const [state, dispatch] = useReducer(uiReducer, UI_INITIAL_STATE);
 
   const openSideMenu = () => {
@@ -15,13 +15,13 @@ export const useUI = () => {
       type: 'UI - Open Sidebar',
     });
   };
-  
+
   const closeSideMenu = () => {
     dispatch({
       type: 'UI - Close Sidebar',
     });
   };
-  
+
   const openModal = () => {
     dispatch({
       type: 'UI - Open Modal',
@@ -34,12 +34,26 @@ export const useUI = () => {
     });
   };
 
+  const startDragging = () => {
+    dispatch({
+      type: 'UI - Start Dragging',
+    });
+  };
+
+  const endDragging = () => {
+    dispatch({
+      type: 'UI - End Dragging',
+    });
+  };
+
   return {
     state,
 
     openSideMenu,
     closeSideMenu,
     openModal,
-    closeModal
+    closeModal,
+    startDragging,
+    endDragging,
   };
 };

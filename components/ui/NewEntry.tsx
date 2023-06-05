@@ -1,33 +1,51 @@
 import { TextField, Box, Modal, Typography, Button } from '@mui/material';
+import { ChangeEvent, useContext, useState } from 'react';
 import { SaveOutlined, CancelOutlined } from '@mui/icons-material';
-import { useContext } from 'react';
 import { UIContext } from '@/context/ui';
+import { EntriesContext } from '@/context/entries';
 
 const style = {
-  position: 'absolute' as 'absolute',
+  position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
   maxWidth: 600,
   width: '100%',
-  bgcolor: 'background.paper',
+  bgcolor: 'rgba(30, 30, 30, 1)',
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
 };
 
 export const NewEntry = () => {
+  const { addNewEntry } = useContext(EntriesContext);
   const { modalOpen, closeModal } = useContext(UIContext);
+  const [inputValue, setInputValue] = useState('');
+  const [isTouched, setIsTouched] = useState(false);
 
-  const handleClose = (event: {}, reason: string) => {
-    if (reason && reason == 'backdropClick') return;
+  const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  };
+
+  const onCancelModal = () => {
+    setInputValue('');
+    setIsTouched(false);
     closeModal();
+  };
+
+  const onSave = () => {
+    if (inputValue.trim().length <= 0) {
+      setIsTouched(true);
+      return;
+    };
+
+    onCancelModal();
+    addNewEntry(inputValue);
   };
 
   return (
     <Modal
       open={modalOpen}
-      onClose={handleClose}
       aria-labelledby='Create new entry'
       aria-describedby='Modal work to create new task'
     >
@@ -43,25 +61,36 @@ export const NewEntry = () => {
         </Typography>
 
         <TextField
+          value={inputValue}
+          onChange={onInputChange}
+          onBlur={() => setIsTouched(true)}
+          error={inputValue.trim().length === 0 && isTouched}
+          helperText={
+            inputValue.trim().length === 0 && isTouched && 'Ingrese un valor'
+          }
           fullWidth
-          autoFocus
           multiline
           minRows={3}
           label='Nueva tarea'
           placeholder='Ingrese la nueva entrada'
-          helperText='Ingrese un valor'
           sx={{ marginBottom: 2 }}
         />
 
         <Box display='flex' justifyContent='space-between'>
-          <Button variant='text' endIcon={<CancelOutlined />}>
+          <Button
+            variant='text'
+            endIcon={<CancelOutlined />}
+            onClick={onCancelModal}
+          >
             Cancelar
           </Button>
 
           <Button
             variant='outlined'
             color='secondary'
+            type='submit'
             endIcon={<SaveOutlined />}
+            onClick={onSave}
           >
             Guardar
           </Button>

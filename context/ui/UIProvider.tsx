@@ -1,5 +1,5 @@
-import { FC } from 'react';
-import { useUI } from '@/hooks';
+import { FC, useMemo } from 'react';
+import { useUIProvider } from '@/hooks';
 import { UIContext } from './';
 
 interface Props {
@@ -7,14 +7,12 @@ interface Props {
 }
 
 export const UIProvider: FC<Props> = ({ children }) => {
-  const { state, ...restMethods } = useUI();
+  const { state, ...restMethods } = useUIProvider();
+  const uiProviderObj = useMemo(() => ({...state, ...restMethods}), [state, restMethods]);
 
   return (
     <UIContext.Provider
-      value={{
-        ...state,
-        ...restMethods
-      }}
+      value={uiProviderObj}
     >
       {children}
     </UIContext.Provider>
