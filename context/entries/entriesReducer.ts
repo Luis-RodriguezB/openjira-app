@@ -1,14 +1,12 @@
 import { Entry } from '@/interfaces';
 import { EntriesState } from './interfaces';
 
-type EntryActionType = '[Entry] - Add-Entry' | '[Entry] - Update-Entry';
+type EntryActionType =
+  | { type: '[Entry] - Add-Entry'; payload: Entry }
+  | { type: '[Entry] - Update-Entry'; payload: Entry }
+  | { type: '[Entry] - Refresh-Data'; payload: Entry[] };
 
-interface ActionProps {
-  payload: Entry;
-  type: EntryActionType;
-}
-
-export const entriesReducer = (state: EntriesState,{ type, payload }: ActionProps): EntriesState => {
+export const entriesReducer = (state: EntriesState, { type, payload }: EntryActionType): EntriesState => {
   switch (type) {
     case '[Entry] - Add-Entry':
       return {
@@ -18,16 +16,30 @@ export const entriesReducer = (state: EntriesState,{ type, payload }: ActionProp
     case '[Entry] - Update-Entry':
       return {
         ...state,
-        entries: state.entries.map(entry => {
-          if(entry._id === payload._id) {
+        entries: state.entries.map((entry) => {
+          if (entry._id === payload._id) {
             entry.status = payload.status;
             entry.description = payload.description;
-          };
+          }
           return entry;
-        })
-      }
+        }),
+      };
+    case '[Entry] - Refresh-Data':
+      return {
+        ...state,
+        entries: [...payload]
+      };
 
     default:
       return { ...state };
   }
 };
+
+
+const getUniquesEntry = (entry: Entry, initialEntries: Entry[]) => {
+  initialEntries.forEach(e => {
+    if (e._id !== entry._id) return true;
+
+    return false;
+  });
+}

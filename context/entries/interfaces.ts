@@ -5,7 +5,7 @@ export interface ContextProps {
 
   addNewEntry: (description: string) => void;
   updateEntry: (entry: Entry) => void;
-  getEntryById: (id: string) => Entry;
+  getEntryById: (id: string) => Entry | undefined;
   getEntriesByStatus: (status: EntryStatus) => Entry[];
 }
 
