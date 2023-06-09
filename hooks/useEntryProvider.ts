@@ -1,4 +1,5 @@
 import { useReducer, useEffect } from 'react';
+import { useSnackbar } from 'notistack';
 import { EntriesState, entriesReducer } from '@/context/entries';
 import { Entry, EntryStatus } from '@/interfaces';
 import { entriesApi } from '@/apis';
@@ -9,19 +10,7 @@ const ENTRIES_INITIAL_STATE: EntriesState = {
 
 export const useEntryProvider = () => {
   const [state, dispatch] = useReducer(entriesReducer, ENTRIES_INITIAL_STATE);
-
-  useEffect(() => {
-    refreshEntries();
-  }, []);
-
-  const refreshEntries = async () => {
-    try {
-      const { data } = await entriesApi.get<Entry[]>('/entries');
-      dispatch({ type: '[Entry] - Refresh-Data', payload: data });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const { enqueueSnackbar } = useSnackbar();
 
   const addNewEntry = async (description: string) => {
     try {
@@ -29,12 +18,24 @@ export const useEntryProvider = () => {
         description,
       });
       dispatch({ type: '[Entry] - Add-Entry', payload: data });
+
+      enqueueSnackbar('Entrada agregada', {
+        variant: 'success',
+        autoHideDuration: 1500,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'left',
+        },
+      });
     } catch (error) {
       console.log(error);
     }
   };
 
-  const updateEntry = async ({ _id, description, status }: Entry) => {
+  const updateEntry = async (
+    { _id, description, status }: Entry,
+    showSnackBar = false
+  ) => {
     try {
       const { data } = await entriesApi.put<Entry>(`entries/${_id}`, {
         description: description,
@@ -44,6 +45,17 @@ export const useEntryProvider = () => {
         type: '[Entry] - Update-Entry',
         payload: data,
       });
+
+      if (showSnackBar) {
+        enqueueSnackbar('Entrada actualizada', {
+          variant: 'success',
+          autoHideDuration: 1500,
+          anchorOrigin: {
+            vertical: 'bottom',
+            horizontal: 'left',
+          },
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -56,6 +68,19 @@ export const useEntryProvider = () => {
   const getEntriesByStatus = (status: EntryStatus) => {
     return state.entries.filter((entry) => entry.status === status);
   };
+
+  const refreshEntries = async () => {
+    try {
+      const { data } = await entriesApi.get<Entry[]>('/entries');
+      dispatch({ type: '[Entry] - Refresh-Data', payload: data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    refreshEntries();
+  }, []);
 
   return {
     state,

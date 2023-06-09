@@ -1,5 +1,10 @@
-import { ChangeEvent, FC, useMemo, useState } from 'react';
+import { ChangeEvent, FC, useContext, useMemo, useState } from 'react';
 import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
+
+import { isValidObjectId } from 'mongoose';
+import { dbEntries } from '@/database';
+
 import { Layout } from '@/components/layouts';
 import {
   Button,
@@ -16,11 +21,14 @@ import {
   RadioGroup,
   TextField,
 } from '@mui/material';
-import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import { EntryStatus } from '@/interfaces';
-
-import { isValidObjectId } from 'mongoose';
+import {
+  SaveOutlined as SaveOutlinedIcon,
+  ArrowBackOutlined as ArrowBackOutlinedIcon,
+  DeleteOutlined as DeleteOutlinedIcon,
+} from '@mui/icons-material';
+import { Entry, EntryStatus } from '@/interfaces';
+import { EntriesContext } from '@/context/entries';
+import { dateFunctions } from '@/utils';
 
 const validStatus: EntryStatus[] = [
   EntryStatus.PENDING,
@@ -29,13 +37,15 @@ const validStatus: EntryStatus[] = [
 ];
 
 interface Props {
-  id: string;
+  entry: Entry;
 }
 
-const EntryPage: FC<Props> = (props) => {
-  const [inputValue, setInputValue] = useState('');
+const EntryPage: FC<Props> = ({ entry }) => {
+  const router = useRouter();
+  const { updateEntry } = useContext(EntriesContext);
+  const [inputValue, setInputValue] = useState(entry.description);
+  const [status, setStatus] = useState<EntryStatus>(entry.status);
   const [touched, setTouched] = useState(false);
-  const [status, setStatus] = useState<EntryStatus>(EntryStatus.PENDING);
 
   const isNotValidField = useMemo(
     () => inputValue.trim().length <= 0 && touched,
@@ -50,16 +60,31 @@ const EntryPage: FC<Props> = (props) => {
     setStatus(event.target.value as EntryStatus);
   };
 
-  const onSave = () => {};
+  const onSave = () => {
+    if (inputValue.trim().length === 0) return;
+
+    const updatedEntry: Entry = {
+      ...entry,
+      description: inputValue,
+      status,
+    };
+
+    updateEntry(updatedEntry, true);
+    router.replace('/');
+  };
+
+  const onBack = () => {
+    router.back();
+  };
 
   return (
-    <Layout title='....'>
+    <Layout title='Editando entrada'>
       <Grid container justifyContent='center' sx={{ marginTop: 2 }}>
         <Grid item xs={12} sm={8} md={6}>
           <Card>
             <CardHeader
               title='Entrada'
-              subheader={`Creada hace: .... minutos`}
+              subheader={`Creada hace ${dateFunctions.getFormatDistanceToNow(entry.createdAt)}`}
             />
             <CardContent>
               <TextField
@@ -110,6 +135,17 @@ const EntryPage: FC<Props> = (props) => {
         sx={{
           position: 'fixed',
           bottom: 30,
+          left: 30,
+        }}
+        onClick={onBack}
+      >
+        <ArrowBackOutlinedIcon sx={{ fontSize: 30 }} />
+      </IconButton>
+
+      <IconButton
+        sx={{
+          position: 'fixed',
+          bottom: 30,
           right: 30,
           backgroundColor: 'error.dark',
         }}
@@ -123,7 +159,9 @@ const EntryPage: FC<Props> = (props) => {
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const { id } = params as { id: string };
 
-  if (!isValidObjectId(id)) {
+  const entry = await dbEntries.getEntryById(id);
+
+  if (!entry) {
     return {
       redirect: {
         destination: '/',
@@ -134,7 +172,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   return {
     props: {
-      id,
+      entry,
     },
   };
 };
